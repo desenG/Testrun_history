@@ -1,0 +1,633 @@
+﻿@{
+    ViewBag.Title = "Administration";
+}
+
+<div id="pnl_Admin"></div>
+<br />
+
+<script type="text/javascript">
+    // Application instance for showing user-feedback messages.
+//    var App = new Ext.App({});
+
+
+    Ext.onReady(function () {
+        Ext.QuickTips.init();
+        if (!String.prototype.trim) {
+            //code for trim
+            String.prototype.trim = function () { return this.replace(/^\s+|\s+$/g, ''); };
+        }
+        /*override Window*/
+        /*control Window always stay with screen*/
+        Ext.override(Ext.Window, {
+            listeners: {
+                move: function (in_this, x, y) {
+                    //max window weight and width, -20 because we always want to see at least small part
+                    var maxX = Ext.getBody().getViewSize().width - 20;
+                    var maxY = Ext.getBody().getViewSize().height - 20;
+                    //new position
+                    x = parseInt(x);
+                    y = parseInt(y);
+                    if (x < 0 || x > maxX || y < 0 || y > maxY) {
+                        //fix if moved too far on top/left
+                        if (y < 0)
+                            y = 0;
+                        if (x < 0)
+                            x = 0;
+                        //fix if moved too far on down/right
+                        if (y > maxY)
+                            y = maxY - in_this.getHeight();
+                        if (x > maxX)
+                            x = maxX - in_this.getWidth();
+                        //tries to show whole window, if it's too big it will go to left/top corner                 
+
+                        //move window on new position
+                        in_this.setPosition(x, y);
+                    }
+                }
+            }
+        });
+
+        //#region other information
+        /*create a form panel with text field*/
+        /*used to allow admin user type in new account name*/
+        /*used in Form_newuser*/
+        var createFmPn_txtf = function (label, ID, x, y, anchor) {
+            return new Ext.form.FormPanel
+                    ({
+
+                        border: false,
+                        defaultType: 'textfield',
+                        x: x,
+                        y: y,
+                        fieldWidth: 100,
+                        items:
+                        [
+                            {
+                                id: ID,
+                                labelStyle:
+                             'font-size: 12px;'
+                             + 'width: 100px;'
+                            + 'height:15px;'
+                            + 'text-align:left;'
+                            + 'padding-right:2px;',
+
+                                msgTarget: 'side',
+                                fieldLabel: label,
+                                anchor: anchor,
+                                allowBlank: false,
+                                selectOnFocus: true
+                                //                                listeners:
+                                //                                {
+                                //                                    valid: handler_valid_FmPn_txtf,
+                                //                                    invalid: handler_invalid_FmPn_txtf
+                                //                                }
+                            }
+                        ]
+
+                    });
+        };
+        /*create a form panel with combobox*/
+        /*used to allow admin user choose a role for new account name*/
+        /*used in Form_newuser*/
+        var createFmPn_comb = function (label, ID, x, y, anchor, store, value) {
+            return new Ext.form.FormPanel
+        ({
+
+            border: false,
+            defaultType: 'combo',
+            x: x,
+            y: y,
+            fieldWidth: 100,
+            items:
+            [
+                {
+                    id: ID,
+                    labelStyle:
+                    'font-size: 12px;'
+                    + 'width: 100px;'
+                + 'height:15px;'
+                + 'text-align:left;'
+                + 'padding-right:2px;',
+                    fieldLabel: label,
+                    anchor: anchor,
+                    triggerAction: 'all',
+                    forceSelection: true,
+                    typeAhead: false,
+                    store: store,
+                    allowBlank: false,
+                    value: value
+                }
+            ]
+
+        });
+        };
+
+        //#endregion
+
+        //#region form for new account information
+        var Form_newuser = new Ext.Panel({
+            layout: 'absolute',
+            border: false,
+            items:
+            [
+                createFmPn_txtf("name", "name", 5, 5, '-20'),
+                createFmPn_comb("role", "role", 5, 35, '-20', ['Administrator', 'Manager', 'User'], 'User')
+            ]
+        });
+        //#endregion
+
+
+
+
+
+        //#region some handler
+        /*handler for validating query name TextField*/
+        /*enable button 'confirm' if the name is valid*/
+        /*add to text field valid event when page load*/
+        var handler_focus_txtf_newQueryName = function (txtField) {
+
+            Ext.getCmp('name').addListener("blur", handler_blur_txtf_newQueryName);
+            //            alert(txtField.getValue().trim().length);
+            if (txtField.getValue().trim().length > 0) {
+
+                //                Ext.getCmp('role').setDisabled(false);
+            }
+            else {
+
+                Ext.getCmp('role').setDisabled(true);
+            }
+
+        };
+        /*handler for validating query name TextField*/
+        /*enable button 'confirm' if the name is valid*/
+        /*add to text field valid event when page load*/
+        var handler_blur_txtf_newQueryName = function (txtField) {
+
+            txtField.setValue(txtField.getValue().trim());
+
+        };
+        /*handler for validating query name TextField*/
+        /*enable button 'confirm' if the name is valid*/
+        /*add to text field valid event when page load*/
+        var handler_valid_txtf_newQueryName = function (txtField) {
+
+
+            if (txtField.getValue().trim().length > 0) {
+                Ext.getCmp('role').setDisabled(false);
+                Ext.getCmp('btn_ConfirmUser').setDisabled(false);
+            }
+            else {
+                Ext.getCmp('role').setDisabled(true);
+
+            }
+
+
+        };
+        /*handler for validating query name TextField*/
+        /*disable button 'confirm' if the name is invalid*/
+        /*add to text field invalid event when page load*/
+        var handler_invalid_txtf_newQueryName = function (txtField, msg) {
+
+            Ext.getCmp('role').setDisabled(true);
+
+
+        };
+
+        /*handler for validating query name TextField*/
+        /*enable button 'confirm' if the name is valid*/
+        /*add to combobox valid event when page load*/
+        var handler_valid_FmPn_comb_role = function (txtField) {
+            if (Ext.getCmp('name').isValid()) {
+                Ext.getCmp('btn_ConfirmUser').setDisabled(false);
+            }
+            else {
+                Ext.getCmp('btn_ConfirmUser').setDisabled(true);
+            }
+
+        };
+        /*handler for validating query name TextField*/
+        /*disable button 'confirm' if the name is invalid*/
+        /*add to combobox invalid event when page load*/
+        var handler_invalid_FmPn_comb_role = function (txtField, msg) {
+            Ext.getCmp('btn_ConfirmUser').setDisabled(true);
+        };
+        /*handler event seleting a value on role combobox*/
+        /*enable button 'confirm' if the name and role is valid*/
+        /*add to combobox invalid event when page load*/
+        var handler_select_FmPn_comb_role = function (comb, newValue, oldValue) {
+            if (Ext.getCmp('name').isValid() && Ext.getCmp('role').isValid()) {
+                Ext.getCmp('btn_ConfirmUser').setDisabled(false);
+            }
+            else {
+                Ext.getCmp('btn_ConfirmUser').setDisabled(true);
+            }
+
+        };
+        //#endregion
+
+        //#region confirm button
+        /*button on Win_user*/
+        /*confirm account information*/
+        /*use to add new account or update a existing account*/
+        var btn_ConfirmUser = new Ext.Button({
+            id: 'btn_ConfirmUser',
+            disabled: true,
+            handler: function (button, e) {
+                var newuserName = Ext.getCmp('name').el.dom.value;
+                var role = Ext.getCmp('role').el.dom.value;
+                if (button.text == "Add") {
+                    if (newuserName.trim().length > 0) {
+                        Ext.Ajax.request
+                                ({
+                                    url: 'Create_User',
+                                    method: 'POST',
+                                    params:
+                                    {
+                                        UserName: newuserName,
+                                        Role: role
+                                    },
+                                    success: function (result, request) {
+                                        var result = Ext.decode(result.responseText);
+
+                                        if (result.success) {
+                                            store.load();
+                                            
+                                            Win_user.hide();
+                                        }
+                                        else {
+                                            alert(result.message);
+                                        }
+                                        Ext.getCmp('btn_deleteUser').setDisabled(true);
+                                    },
+                                    failure: function (result, request) {
+                                        Ext.MessageBox.alert('Failed', 'Try again, and if the problem persists, see your system administrator. '); // + result.date);
+                                    }
+                                }); //Ajax Load_Tree END
+                    }
+                    else {
+                        Ext.getCmp('name').setValue(newuserName.trim());
+                        Ext.getCmp('btn_ConfirmUser').setDisabled(true);
+                    }
+
+                }
+                else//button.text == "Update"
+                {
+                    Ext.Ajax.request
+                    ({
+                        url: 'Update_User',
+                        method: 'POST',
+                        params:
+                        {
+                            UserName: newuserName,
+                            Role: role
+                        },
+                        success: function (result, request) {
+                            var result = Ext.decode(result.responseText);
+
+                            if (result.success) {
+                                store.load();
+                                Ext.getCmp('btn_deleteUser').setDisabled(true);
+                                Win_user.hide();
+                            }
+                            else {
+                                alert(result.message);
+                            }
+
+                        },
+                        failure: function (result, request) {
+                            Ext.MessageBox.alert('Failed', 'Try again, and if the problem persists, see your system administrator. '); // + result.date);
+                        }
+                    }); //Ajax Load_Tree END
+
+
+                }
+            }
+        });
+        //#endregion
+        //#region cancel button
+        /*button on Win_user*/
+        /*cancel account information*/
+        /*use to cancle add new account or cancel update a existing account*/
+        var btn_CancelAddUser = new Ext.Button({
+            id: 'btn_CancelAddUser',
+            text: 'Cancel',
+            disabled: false,
+            handler: function (button, e) {
+
+
+                //                Ext.getCmp('name').setValue("");
+                //                Ext.getCmp('name').reset();
+                //                Ext.getCmp('role').setValue("User");
+                //                Ext.getCmp('role').reset();
+                Win_user.hide();
+
+            }
+        });
+        //#endregion
+        //#region New query Window
+        var Win_user = new Ext.Window({
+            id: 'Win_user',
+            title: 'New User',
+            closable: true,
+            closeAction: 'hide',
+            width: 500,
+            height: 150,
+            minWidth: 300,
+            minHeight: 150,
+            layout: 'fit',
+            plain: true,
+            items: Form_newuser,
+            buttons:
+            [
+                btn_ConfirmUser,
+                btn_CancelAddUser
+            ],
+            listeners:
+            {
+                show: function (window) {
+
+                    Ext.getCmp('btn_ConfirmUser').setDisabled(true);
+                    Ext.getCmp('btn_CancelAddUser').setDisabled(false);
+                    Ext.getCmp('name').addListener("valid", handler_valid_txtf_newQueryName);
+                    Ext.getCmp('name').addListener("invalid", handler_invalid_txtf_newQueryName);
+                    Ext.getCmp('name').addListener("focus", handler_focus_txtf_newQueryName);
+
+                    Ext.getCmp('role').addListener("valid", handler_valid_FmPn_comb_role); //
+                    Ext.getCmp('role').addListener("invalid", handler_invalid_FmPn_comb_role);
+                    Ext.getCmp('role').addListener("select", handler_select_FmPn_comb_role);
+                }
+
+            }
+        });
+
+
+        //#endregion
+
+
+
+
+
+
+
+        //#region user grid view panel
+
+        //#region add button
+        /*button on toptool bar of user grid view panel*/
+        /*open user window*/
+        /*use to add new account */
+        var btn_OpenUserWindow = new Ext.Button({
+            id: 'btn_OpenUserWindow',
+            text: 'Add User',
+            disabled: false,
+            handler: function (button, e) {
+
+
+
+                Win_user.show();
+
+                Ext.getCmp('btn_ConfirmUser').setText("Add");
+                Ext.getCmp('Win_user').setTitle("Add User");
+                Ext.getCmp('name').setDisabled(false);
+                Ext.getCmp('name').reset();
+                Ext.getCmp('name').setValue(" ");
+                //                Ext.getCmp('name').reset();
+                //                Ext.getCmp('name').focus(true);
+                Ext.getCmp('role').reset();
+                Ext.getCmp('role').setValue("User");
+                Ext.getCmp('role').setDisabled(true);
+                Ext.getCmp('btn_ConfirmUser').setDisabled(true);
+            }
+        });
+        //#endregion
+        //#region add button
+        /*button on toptool bar of user grid view panel*/
+        /*use to delete existing user */
+        var btn_deleteUser = new Ext.Button({
+            id: 'btn_deleteUser',
+            text: 'Delete User',
+            disabled: true,
+            handler: function (button, e) {
+                var thegrid = Ext.getCmp('gpl_user');
+                var record = thegrid.getSelectionModel().getSelected(); //get selected row
+                Ext.MessageBox.confirm(
+                'Confirm Box', 'User ' + '" ' +
+                record.get("UserName") + ' " will be deleted permanently. ',
+                function (buttonText) {
+                    if (buttonText == "no") {
+
+                    }
+                    if (buttonText == "yes") {
+                        Ext.Ajax.request
+                        ({
+                            url: 'Delete_User',
+                            method: 'POST',
+                            params:
+                            {
+                                UserName: record.get("UserName"),
+                                Role: record.get("Role")
+                            },
+                            success: function (result, request) {
+                                var result = Ext.decode(result.responseText);
+
+                                if (result.success) {
+                                    store.load();
+                                }
+                                else {
+                                    alert(result.message);
+                                }
+                                Ext.getCmp('btn_deleteUser').setDisabled(true);
+                            },
+                            failure: function (result, request) {
+                                Ext.MessageBox.alert('Failed', 'Try again, and if the problem persists, see your system administrator. '); // + result.date);
+                            }
+                        }); //Ajax  END
+                    } //end if
+                } //end function
+                )
+            }
+        });
+        //#endregion
+        //#region toptool
+        /*toptool bar of user grid view panel*/
+        var tbar_gpl_user = new Ext.Toolbar({
+            //            width: 600,
+            //            height: 80,
+            items:
+        [
+            btn_OpenUserWindow,
+            btn_deleteUser
+        ]
+        });
+        //#endregion
+        //#region handler
+        /*handler of double click row on user grid view panel*/
+        /*show user form with selected user information*/
+        var handler_rowdblclick_gpl_user = function (grid, rowIndex, columnIndex, e) {
+            var record = grid.getStore().getAt(rowIndex);
+            //            alert(record.get("UserName"));
+            //            alert(record.get("Role"));
+
+            Ext.getCmp('btn_ConfirmUser').setText("Update");
+            Ext.getCmp('Win_user').setTitle("Update User");
+            Ext.getCmp('name').setValue(record.get("UserName"));
+            Ext.getCmp('name').setDisabled(true);
+            Ext.getCmp('role').setValue(record.get("Role"));
+            Ext.getCmp('btn_ConfirmUser').setDisabled(true);
+            if (record.get("UserName") == 'Admin') {
+                Ext.getCmp('role').setDisabled(true);
+            }
+            else {
+                Ext.getCmp('role').setDisabled(false);
+            }
+
+            Win_user.show();
+
+
+        };
+        /*handler of click row on user grid view panel*/
+        /*if select row is "Admin" or the logined user*/
+        /*disable the delete button*/
+        var handler_rowclick_gpl_user = function (grid, rowIndex, e) {
+            var thegrid = Ext.getCmp('gpl_user');
+            var record = thegrid.getSelectionModel().getSelected(); //get selected row
+            if (record == undefined || record.get("UserName") == '@WebSecurity.CurrentUserName' || record.get("UserName") == 'Admin') {
+
+                Ext.getCmp('btn_deleteUser').setDisabled(true);
+            }
+            else {
+
+                Ext.getCmp('btn_deleteUser').setDisabled(false);
+            }
+        };
+        //#endregion
+        // Create a standard HttpProxy instance.
+        var proxy = new Ext.data.HttpProxy({
+            url: 'Load_User'
+        });
+
+        // Typical JsonReader.  Notice additional meta-data params for defining the core attributes of your json-response
+        var reader = new Ext.data.JsonReader
+        (
+            {
+                //                totalProperty: 'total',
+                successProperty: 'success',
+                //                idProperty: 'id',
+                root: 'data',
+                messageProperty: 'message'  // <-- New "messageProperty" meta-data
+            },
+            [
+                { name: 'UserName' },
+                { name: 'Role' }
+        //        { name: 'email', allowBlank: false },
+        //        { name: 'first', allowBlank: false },
+        //        { name: 'last', allowBlank: false }
+            ]
+        );
+
+
+        // Typical Store collecting the Proxy, Reader together.
+        var store = new Ext.data.Store({
+            id: 'user',
+            //        restful: true,     // <-- This Store is RESTful
+            proxy: proxy,
+            reader: reader
+        });
+
+        // load the store immeditately
+        store.load();
+        /*column model of user*/
+        /*used in user grid view panel*/
+        var userColumns =
+        new Ext.grid.ColumnModel
+        ({
+            defaults:
+            {
+                sortable: true, autoWidth: true
+            },
+            columns:
+            [
+
+                {
+                    dataIndex: 'UserName',
+                    header: 'User Name'
+                },
+                {
+                    dataIndex: 'Role',
+                    header: 'Role'
+                }
+            //                {
+            //                    dataIndex: 'GivenName',
+            //                    header: 'Given name'
+            //                },
+            //                {
+            //                    dataIndex: 'FamilyName',
+            //                    header: 'Family name'
+            //                },
+            //                {
+            //                    dataIndex: 'MobilePhone',
+            //                    header: 'Mobile Phone'
+            //                },
+            //                {
+            //                    dataIndex: 'Email',
+            //                    header: 'Email'
+            //                }
+            ]
+
+        });
+        /*'user grid view panel'Panel*/
+        var gpl_user = new Ext.grid.GridPanel({
+            id: 'gpl_user',
+            //            title: 'user',
+            margins: '0 5 5 0',
+            frame: true,
+            store: store,
+            //height: '70%',
+            stripeRows: true,
+            columnLines: true,
+            cm: userColumns,
+
+            tbar: tbar_gpl_user,
+            listeners:
+            {
+                rowdblclick: handler_rowdblclick_gpl_user,
+                rowclick: handler_rowclick_gpl_user
+            }
+
+        });
+
+
+        /*Panel for place user grid view panel*/
+        var pnl_Admin =
+        new Ext.Panel({
+            width: '100%',
+            height: 900,
+            //    autoHeight:true,
+            layout: 'fit',
+            viewConfig: {
+                forceFit: true,
+                fitcontainer: true
+            },
+
+            title: 'Administration',
+            //    region: 'center',
+            //            layout: 'border',
+            items:
+            [
+                gpl_user
+            ]
+
+
+
+
+
+
+        });
+
+        /* show it*/
+        pnl_Admin.show();
+        /* render it*/
+        pnl_Admin.render('pnl_Admin');
+        //#endregion
+
+    });
+</script>

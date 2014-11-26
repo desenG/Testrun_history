@@ -1,0 +1,190 @@
+.icon-warning {
+	background-image:url(../../images/icons/note_error.png) ! important;
+}
+
+.icon-accept {
+	background-image:url(../../images/icons/accept.png) ! important;
+}
+
+.icon-cancel {
+	background-image:url(../../images/icons/cancel.png) ! important;
+}
+
+.icon-page {
+	background-image:url(../../images/icons/page.png) ! important;
+}
+
+.icon-book-open {
+	background-image:url(../../images/icons/book_open.png) ! important;
+}
+
+.icon-transferirParada {
+	background-image:url(../../images/icons/page_go.png) ! important;
+}
+
+.icon-addPrevisao {
+	background-image:url(../../images/icons/clock_add.png) ! important;
+}
+
+.icon-addFicha {
+	background-image:url(../../images/icons/application_add.png) ! important;
+}
+
+.icon-del {
+	background-image:url(../../images/icons/cross.png) ! important;
+}
+
+.icon-tremPartida {
+	background-image:url(../../images/icons/date_go.png) ! important;
+}
+
+.icon-tremAcidente {
+	background-image:url(../../images/icons/application_error.png) ! important;
+}
+
+.icon-new {
+	background-image:url(../../images/icons/add.png) ! important;
+}
+
+.icon-edit {
+	background-image:url(../../images/icons/pencil.png) ! important;
+}
+
+.icon-phone_add {
+	background-image:url(../../images/icons/phone_add.png) ! important;
+}
+
+.icon-AppEdit {
+	background-image:url(../../images/icons/application_form_edit.png) ! important;
+}
+
+.icon-go {
+	background-image:url(../../images/icons/arrow_right.png) ! important;
+}
+
+.icon-house {
+	background-image:url(../../images/icons/house.png) ! important;
+}
+
+.icon-tab-nova {
+	background-image:url(../../images/icons/tab_add.png) ! important;
+}
+
+.icon-door-in {
+	background-image:url(../../images/icons/door_in.png) ! important;
+}
+
+.icon-user {
+	background-image:url(../../images/icons/user.png) ! important;
+}
+
+.icon-user-add {
+	background-image:url(../../images/icons/user_add.png) ! important;
+}
+
+.icon-detail
+{
+	background-image:url(../../images/icons/zoom.png) ! important;
+}
+
+.icon-find
+{
+	background-image:url(../../images/icons/find.png) ! important;
+}
+
+.icon-calendar
+{
+	background-image:url(../../images/icons/calendar.png) ! important;
+}
+
+.icon-loading
+{
+	background-image:url(../Images/loading.png) ! important;
+}
+
+.icon-page-add
+{
+	background-image:url(../../images/icons/page_add.png) ! important;
+}
+
+.icon-pt-BR
+{
+	background-image:url(../../images/icons/pt-BR.png) ! important;
+	width: 16px;
+	height:11px;
+}
+
+.icon-es-ES
+{
+	background-image:url(../../images/icons/es-ES.png) ! important;
+	width: 16px;
+	height:11px;
+}
+
+.icon-es-AR
+{
+	background-image:url(../../images/icons/es-AR.png) ! important;
+	width: 16px;
+	height:11px;
+}
+
+.icon-en-US
+{
+	background-image:url(../../images/icons/en-US.png) ! important;
+}
+
+.icon-comments
+{
+	background-image:url(../../images/icons/comments.png) ! important;
+}
+
+.statusbar-icon-clock
+{
+	background-image:url(../../images/icons/clock.png) ! important;
+	background-repeat:no-repeat;
+	padding-left: 20px !important;
+}
+
+.statusbar-icon-user
+{
+	background-image:url(../../images/icons/user.png)! important;
+	background-repeat:no-repeat;
+	padding-left: 20px !important;
+}
+
+.icon-group-add
+{
+	background-image:url(../../images/icons/group_add.png) ! important;
+}
+
+.icon-cog-go
+{
+	background-image:url(../../images/icons/cog_go.png) ! important;
+}
+
+.icon-page-excel
+{
+	background-image:url(../../images/icons/page_excel.png) ! important;
+}
+
+.icon-save
+{
+	background-image:url(../../images/icons/bullet_disk.png) ! important;
+}
+
+.icon-folder-explore
+{
+	background-image:url(../../images/icons/folder_explore.png) ! important;
+}
+
+.msg-success
+{
+	background-image:url(../../images/messages/success.png) ! important;
+	background-repeat:no-repeat;
+}
+
+.msg-error
+{
+	background-image:url(../../images/messages/error.png) ! important;
+	background-repeat:no-repeat;
+}

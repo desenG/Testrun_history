@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>@ViewBag.Title</title>
+        <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+        <meta name="viewport" content="width=device-width" />
+        @Styles.Render("~/Content/css")
+        @Scripts.Render("~/bundles/modernizr")
+
+        @Styles.Render("~/EXT/css")
+        @Scripts.Render("~/EXT/js")
+
+    </head>
+    <body>
+     <div class="page">
+             <div id="header">
+                <div>
+                    <ul id="nav">                   
+                            @if (Request.IsAuthenticated)
+                            {
+
+                                string[] roles = Roles.GetRolesForUser();
+                                foreach (string role in roles)
+                                {
+                                    if (role.Contains("Administrator"))
+                                    {
+
+                                            <li>@Html.ActionLink("Administration", "Admin", "Account")</li>
+                                            <li>@Html.ActionLink("Test Run History", "Index", "Home")</li>                                        
+                                        break;
+
+                                    }
+
+                                }
+                                <text>
+                                    @Html.ActionLink("Change Password", "Manage", "Account", routeValues: null, htmlAttributes: new { @class = "username", title = "Manage" })
+                                    @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <a href="javascript:document.getElementById('logoutForm').submit()">Log off</a>
+                                    }
+                                </text>
+
+                            }
+                            else
+                            {
+                                <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+                            }
+                     </ul>   
+
+                </div>  
+                <div class="float-right">
+                    <div id="login">
+                        @Html.Partial("_LoginPartial")                        
+                    </div>
+                </div>
+                <div class="position-left">
+                    <img src="~/Images/Logo.png" alt="Logo" height="50" width="100" />
+                </div>  
+                             
+            </div>
+
+            <div id="main">
+                @RenderSection("featured", required: false)
+                <section class="content-wrapper main-content clear-fix">
+                    @RenderBody()
+                </section>
+            </div>
+
+    </div>
+@*        <footer>
+            <div class="content-wrapper">
+                <div class="float-left">
+                    <p>&copy; @DateTime.Now.Year </p>
+                </div>
+            </div>
+        </footer>*@
+
+        @RenderSection("scripts", required: false)
+    </body>
+</html>

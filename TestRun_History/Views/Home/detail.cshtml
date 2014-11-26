@@ -1,0 +1,511 @@
+﻿@model TestRun_History.Models.TestRun_Data
+
+@{
+    ViewBag.Title = "TestRunData";    
+}
+
+<h2>@ViewBag.Exception</h2>
+<div id="TestRunDetails"></div>
+<br />
+
+<script type="text/javascript">
+
+
+
+
+
+    Ext.onReady(function () {
+
+        /*function to format a string as specific form*/
+        String.prototype.toHHMMSS = function () {
+            var sec_num = parseInt(this, 10); // don't forget the second parm
+            var hours = Math.floor(sec_num / 3600);
+            var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+            var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+            //    if (hours < 10) { hours = "0" + hours; }
+            //    if (minutes < 10) { minutes = "0" + minutes; }
+            //    if (seconds < 10) { seconds = "0" + seconds; }
+            var time = hours + ' h ' + minutes + ' m ' + seconds + ' s ';
+            return time;
+        };
+
+
+        //#region step information
+        /*column model using in steps grip panel*/
+        var columns_grid_steps =
+            new Ext.grid.ColumnModel
+            ({
+                defaults:
+                {
+                    sortable: false, autoWidth: false
+                },
+                columns:
+                [
+                    {
+                        dataIndex: 'Step_Num',
+                        header: 'Step #',
+                        width: 15
+                        //                        hidden: true
+                        // instead of specifying filter config just specify filterable=true
+                        // to use store's field's type property (if type property not
+                        // explicitly specified in store config it will be 'auto' which
+                        // GridFilters will assume to be 'StringFilter'
+                        //                filterable: true,
+                        //               	autoWidth: true
+                        //,filter: {type: 'numeric'}
+                    }, //, sortable: true},
+                    {
+                    dataIndex: 'TR_Num',
+                    header: 'TR_Num',
+                    hidden: true
+                },
+                    {
+                        id: 'StepDetail',
+                        dataIndex: 'StepDetail',
+                        header: 'StepDetail',
+                        //                filterable: true,
+                        width: 100
+                    },
+                    {
+                        dataIndex: 'ExpectedResult',
+                        header: 'ExpectedResult',
+                        width: 100
+                    },
+                    {
+                        dataIndex: 'Checked',
+                        header: 'Checked',
+                        id: 'Checked',
+                        width: 100,
+                        autoWidth: true
+                    }
+                ]
+            });
+
+
+
+        /*the store of step grid panel*/
+        var store_grid_steps = new Ext.data.JsonStore
+            ({
+                //                id: 'store_grid_steps',
+                autoLoad: true,
+                //                reader: reader_grid_steps,
+                ////                remoteSort: true,
+                //                proxy: proxy
+                totalProperty: 'total',
+                successProperty: 'success',
+                root: 'data',
+                remoteSort: true,
+                fields: [
+                    {
+                        name: 'Step_Num',
+                        type: 'string'
+                    },
+                    {
+                        name: 'TR_Num',
+                        type: 'int'
+                    },
+                    {
+                        name: 'StepDetail',
+                        type: 'string'
+                    },
+                    {
+                        name: 'ExpectedResult',
+                        type: 'string'
+                    },
+                    {
+                        name: 'Checked',
+                        type: 'string'
+                    },
+                    {
+                        name: 'Comments',
+                        type: 'string'
+                    }
+                ],
+                // load using script tags for cross domain, if the data in on the same domain as
+                // this page, an HttpProxy would be better
+                proxy: new Ext.data.HttpProxy({
+                    url: 'Load_Steps?TestRun_DataID=' + '@Model.TestRun_DataID'
+
+                })
+            });
+
+        store_grid_steps.load();
+
+        /*the step panel of Detail Window*/
+        var grid_steps = new Ext.grid.GridPanel
+            ({
+                id: 'grid_steps',
+                //columnLines: true,
+                stripeRows: true,
+                frame: true,
+                split: true,
+                store: store_grid_steps,
+                height: 200,
+
+                colspan: 7,
+                width: 960,
+                cm: columns_grid_steps,
+                viewConfig:
+                    {
+                        forceFit: true,
+                        enableRowBody: true,
+                        getRowClass: function (record, rowIndex, p, store) {
+                            p.body =
+                            '<b>' + record.get('Comments') + '</b>';
+                            return 'x-grid3-row-expanded';
+                        }
+                    }
+
+            });
+
+        //                var jsonData = Ext.decode(steps.toString());
+        //                grid_steps.store.loadData(steps);
+
+
+        //#endregion
+        ////////////////////
+        var TR_Num = '@Model.TR_Num';
+        var TC_Num = '@Model.TC_Num';
+        var T_Summary = '@Model.T_Summary';
+        var T_Type = '@Model.T_Type';
+        var T_Main_Component = '@Model.T_Main_Component';
+        var T_Feature_ID = '@Model.T_Feature_ID';
+        var env_IDEA_Encoding = '@Model.env_IDEA_Encoding';
+        var env_OS = '@Model.env_OS';
+        var User_Type = '@Model.env_User_Type';
+        var T_Status = '@Model.T_Status';
+        var TR_Created_By = '@Model.TR_Created_By';
+        var TR_Date_Created = new Date('@Model.TR_Date_Created');
+        //        alert(TR_Date_Created);
+        var TR_Last_Mod_By = '@Model.TR_Last_Mod_By';
+        var TR_Date_Last_Mod = new Date('@Model.TR_Date_Last_Mod');
+        var product = '@Model.product';
+        var isAutomated = '@Model.isAutomated';
+        var Estimated_Time = '@Model.Estimated_Time';
+        var T_Variants = '@Model.T_Variants';
+        var ProblemStatement = '@Model.ProblemStatement';
+        var Build = '@Model.Build';
+        var PartialFailNotes = '@Model.PartialFailNotes';
+        var Folders = '@Model.Folders';
+        var Language = '@Model.Language';
+        var Flavour = '@Model.Flavour';
+        var Task = '@Model.Task';
+        //#region other information
+        /*create a form panel with text field*/
+        /*used to display information for Test Run #,Test Case #,Status,Type*/
+        /*Component,Task,OS,Created By,Date Created,Last Modified By and Date Modified */
+        /*invoked by createPn_StepsInfo*/
+        var createFmPn_txtf = function (label, ID, Disabled, Value) {
+            return new Ext.form.FormPanel
+                    ({
+                        id: ID,
+
+                        defaultType: 'textfield',
+
+                        items:
+                        [
+                            { labelStyle:
+                             'font-size: 10px;'
+                             + 'width: 100px;'
+                            + 'height:15px;'
+                            + 'text-align:left;'
+                            + 'padding-right:2px;',
+                                value: Value,
+                                fieldLabel: label,
+                                width: '88%',
+                                disabled: Disabled
+                            }
+                        ]
+
+                    });
+        };
+        //#region other information
+        /*create a form panel with text field*/
+        /*used to display information for Test Run #,Test Case #,Status,Type*/
+        /*Component,Task,OS,Created By,Date Created,Last Modified By and Date Modified */
+        /*invoked by createPn_StepsInfo*/
+        var createFmPn_txtf_colspan = function (label, ID, Disabled, Value, Colspan) {
+            return new Ext.form.FormPanel
+                    ({
+                        id: ID,
+
+                        defaultType: 'textfield',
+                        colspan: Colspan,
+                        items:
+                        [
+                            { labelStyle:
+                             'font-size: 10px;'
+                             + 'width: 100px;'
+                            + 'height:15px;'
+                            + 'text-align:left;'
+                            + 'padding-right:2px;',
+                                value: Value,
+                                fieldLabel: label,
+                                width: '96%',
+                                disabled: Disabled
+                            }
+                        ]
+
+                    });
+        };
+        /*create a form panel with text Area*/
+        /*the column span can be set if it is used in column layout*/
+        /*used to display information for Variants,Folders,Problem Statement,Partial Fail Notes and Summary*/
+        /*invoked by createPn_StepsInfo*/
+        var createFmPn_txtA_colspan = function (label, ID, Disabled, Colspan, Value) {
+            return new Ext.form.FormPanel
+                    ({
+                        id: ID,
+                        labelWidth: 100,
+                        labelAlign: 'top',
+                        colspan: Colspan,
+                        defaultType: 'textarea',
+
+                        items:
+                        [
+                            {
+                                labelStyle:
+                             'font-size: 10px;'
+                            + 'height:15px;'
+                            + 'text-align:left;'
+                             + 'padding-right:2px',
+
+                                value: Value,
+                                fieldLabel: label,
+                                width: '98%',
+                                disabled: Disabled
+                            }
+                        ]
+
+                    });
+        };
+        /*create a form panel with check box*/
+        /*the column span can be set if it is used in column layout*/
+        /*used to display information for Is Automated*/
+        /*invoked by createPn_StepsInfo*/
+        var createFmPn_CKB_colspan = function (label, ID, Disabled, Colspan, Checked) {
+            return new Ext.form.FormPanel
+            ({
+                id: ID,
+                labelWidth: 100,
+                labelAlign: 'right',
+                colspan: Colspan,
+                defaultType: 'checkbox',
+                items:
+                [
+                    {
+                        labelStyle:
+                     'font-size: 10px;'
+                    + 'height:15px;'
+                    + 'text-align:left',
+                        checked: Checked,
+                        fieldLabel: label,
+                        width: '95%',
+                        disabled: Disabled
+                    }
+                ]
+
+            });
+        };
+        /*create a panel with Lable*/
+        /*the column span can be set if it is used in column layout*/
+        /*used to lable*/
+        /*invoked by createPn_StepsInfo*/
+        var createPn_LBL_colspan = function (Text, ID, Colspan) {
+
+
+            return new Ext.Panel
+            ({
+                id: ID,
+                colspan: Colspan,
+                defaultType: 'label',
+                style: 'font-weight:bold;'
+                     + 'font-size: 25px;'
+                    + 'height:50px;'
+                    + 'text-align:center',
+
+                items:
+                [
+                    {
+                        text: Text,
+                        width: '95%'
+                    }
+                ]
+
+            });
+        };
+        /*create a panel with blank panel*/
+        /*the column span can be set if it is used in column layout*/
+        /*used as the space between two columns*/
+        /*invoked by createPn_StepsInfo*/
+        var createPn_blank_colspan = function (Colspan) {
+
+
+            return new Ext.Panel
+            ({
+                width: 1,
+                colspan: Colspan
+            });
+        };
+
+
+        // Init the singleton.  Any tag-based quick tips will start working.
+        //        Ext.QuickTips.init();
+        //'Query Manage Center'
+        //#region Query Explorer
+        /*the panel to manage 3 panels*/
+        /*using border layout*/
+        var TestRunDetails = function () {
+
+            var str_T_Variants = T_Variants.replace(/^[ ]+|[ ]+$/g, '');
+
+            var partsOfStr_T_Variants = str_T_Variants.split(';');
+            var list_str_T_Variants = '';
+
+            if (str_T_Variants.length > 0) {
+
+                for (var i = 0; i < partsOfStr_T_Variants.length; i++) {
+
+                    list_str_T_Variants += '-' + partsOfStr_T_Variants[i] + '\n';
+
+                }
+            }
+
+            var str_Folders = Folders.replace(/^[ ]+|[ ]+$/g, '');
+
+            var partsOfStr_Folders = str_Folders.split(';');
+            var list_str_Folders = '';
+
+            if (str_Folders.length > 0) {
+
+                for (var i = 0; i < partsOfStr_Folders.length; i++) {
+
+                    list_str_Folders += '-' + partsOfStr_Folders[i] + '\n';
+
+                }
+            }
+
+
+            var lbl_wintitle = product + " "
+                    + Build + "\n"
+                    + env_IDEA_Encoding + " "
+                    + Flavour + " "
+                    + Language;
+
+            return new Ext.Panel({
+                width: 1000,
+                height: 710,
+                //    autoHeight:true,
+
+                title: 'TestRun Details',
+                //    region: 'center',
+                //                        layout: 'border',
+                items:
+                    [
+                        new Ext.Panel({
+
+                            id: 'Pn_StepsInfo',
+                            frame: true,
+                            //split: true,
+                            //autoScroll: false,
+                            //margins: '5 5 0 0',
+                            layout:
+                                {
+                                    type: 'table',
+                                    // The total column count must be specified here
+                                    columns: 7,
+                                    width: 1200
+                                },
+                            items:
+                                [
+                            ////////////////top row /////////////////////////
+
+                            createPn_LBL_colspan(lbl_wintitle, "lbl_wintitle", 7),
+
+                            ////////////////first row////////////////////////
+                            createFmPn_txtf("Test Run #", "FmPn_txtf_TR_Num", true, TR_Num),
+                            createPn_blank_colspan(1),
+
+                            createFmPn_txtf("Test Case #", "FmPn_txtf_TC_Num", true, TC_Num),
+                            createPn_blank_colspan(1),
+
+                            createFmPn_txtf("Status", "FmPn_txtf_T_Status", true, T_Status),
+                            createPn_blank_colspan(1),
+
+                            createFmPn_txtf("Type", "FmPn_txtf_T_Type", true, T_Type),
+                            ////////////////second row////////////////////////
+
+                            createFmPn_txtf("OS", "FmPn_txtf_env_OS", true, env_OS),
+                            createPn_blank_colspan(1),
+                            createFmPn_txtf("User Type", "FmPn_txtf_env_User_Type", true, User_Type),
+                            createPn_blank_colspan(1),
+                            createFmPn_CKB_colspan("Is Automated", "FmPn_txtf_isAutomated", true, 1, isAutomated),
+                            createPn_blank_colspan(1),
+                            createFmPn_txtf("Estimated Time", "FmPn_txtf_Estimated_Time", true, Estimated_Time.toString().toHHMMSS()),
+                            ////////////////third row////////////////////////
+                            createFmPn_txtf("Created By", "FmPn_txtf_TR_Created_By", true, TR_Created_By),
+                            createPn_blank_colspan(1),
+                            createFmPn_txtf("Date Created", "FmPn_txtf_TR_Date_Created", true, TR_Date_Created.dateFormat('d/m/Y')),
+                            createPn_blank_colspan(1),
+                            createFmPn_txtf("Last Modified By", "FmPn_txtf_TR_Last_Mod_By", true, TR_Last_Mod_By),
+                            createPn_blank_colspan(1),
+                            createFmPn_txtf("Date Modified", "FmPn_txtf_TR_Date_Last_Mod", true, TR_Date_Last_Mod.dateFormat('d/m/Y')),
+                            ////////////////forth row////////////////////////   
+                            createFmPn_txtf_colspan("Component", "FmPn_txtf_T_Main_Component", true, T_Main_Component, 3),
+                            createPn_blank_colspan(1),
+                            createFmPn_txtf_colspan("Task", "FmPn_txtf_Task", true, Task, 3),
+                            //                    createFmPn_CKB_colspan("Is Automated", "FmPn_txtf_isAutomated", true, 2, stepsData.isAutomated),
+                            //                    createPn_blank_colspan(2),
+                            //                    createFmPn_txtf("Estimated Time", "FmPn_txtf_Estimated_Time", true, stepsData.Estimated_Time.toString().toHHMMSS()),
+                            //                    createPn_blank_colspan(2),
+                            //////////////////////////////
+                            createFmPn_txtA_colspan("Summary", "FmPn_txtf_T_Summary", true, 7, T_Summary),
+
+                            ////////////////sixth row//////////////////////// 
+                            createFmPn_txtA_colspan("Problem Statement", "FmPn_txtf_ProblemStatement", true, 3, ProblemStatement),
+                            createPn_blank_colspan(1),
+                            createFmPn_txtA_colspan("Partial Fail Notes", "FmPn_txtf_PartialFailNotes", true, 3, PartialFailNotes),
+                            ////////////////seventh row//////////////////////// 
+                            {
+                            labelStyle:
+                                 'font-size: 12px;'
+                                + 'height:70px;'
+                                + 'text-align:center',
+                            xtype: 'label',
+                            text: "Steps:"
+
+                        },
+
+                            createPn_blank_colspan(6),
+
+
+                        ////////////////eighth row//////////////////////// 
+                        grid_steps,
+
+
+                        ////////////////fifth row//////////////////////// 
+                            createFmPn_txtA_colspan("Variants", "FmPn_txtf_T_Variants", true, 3, list_str_T_Variants), //stepsData.T_Variants),
+                            createPn_blank_colspan(1),
+                            createFmPn_txtA_colspan("Folders", "FmPn_txtf_Folders", true, 3, list_str_Folders) //stepsData.Folders),
+
+                        //        createFmPn_txtf("Type","FmPn_txtf_T_Type",true,stepsData.T_Type),
+
+
+
+                                ]
+                    })
+                    ]
+            });
+        };
+        /* show it*/
+        if ('@ViewBag.Exception' == '')
+        {
+            TestRunDetails().show();
+            /* render it*/
+            TestRunDetails().render('TestRunDetails');
+        }
+        //#endregion
+
+    });
+    </script>
